@@ -1,0 +1,14 @@
+---
+# Mainnet common variables
+base_p2p_port: 9200
+base_consensus_port: 26656
+base_metrics_port: 9250
+target_version: "25.5"
+genesis_url: "https://github.com/oasisprotocol/mainnet-artifacts/releases/download/2023-11-29/genesis.json"
+genesis_checksum: "sha256:b14e45e97da0216a16c25096fd216f591e4d526aa6abac110ac23cb327b64ba1"
+
+seed_peers:
+  - "H6u9MtuoWRKn5DKSgarj/dzr2Z9BsjuRHgRAoXITOcU=@34.187.216.34:26656"
+  - "H6u9MtuoWRKn5DKSgarj/dzr2Z9BsjuRHgRAoXITOcU=@34.187.216.34:9200"
+  - "90em3ItdQkFy15GtWqCKHi5j7uEUmZPZIzBt7I5d6w4=@146.148.13.130:26656"
+  - "90em3ItdQkFy15GtWqCKHi5j7uEUmZPZIzBt7I5d6w4=@146.148.13.130:9200"

@@ -1,0 +1,12 @@
+---
+# Mainnet Mixed Runtime Node specific variables
+network: mainnet
+node_type: mixed
+node_user: oasis
+node_mode: compute
+consensus_validator: false
+# The `runtimes` list for a mixed node is defined per-host in inventory/hosts.yml
+port_offset: 4 # Using a new offset to avoid conflicts
+p2p_port: "{{ base_p2p_port + port_offset }}"
+consensus_port: "{{ base_consensus_port + port_offset }}"
+metrics_port: "{{ base_metrics_port + port_offset }}"

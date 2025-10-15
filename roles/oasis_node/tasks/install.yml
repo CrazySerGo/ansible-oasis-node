@@ -1,0 +1,147 @@
+---
+- name: Construct list of groups for user
+  set_fact:
+    user_groups: >-
+      {{
+        ['systemd-journal']
+        + (
+            ['sgx']
+            if 'sgx' in ansible_facts.get('getent_group', {})
+            else []
+          )
+        + (
+            ['sgx_prv']
+            if 'sgx_prv' in ansible_facts.get('getent_group', {})
+            else []
+          )
+      }}
+  when: runtimes is defined and runtimes | length > 0
+
+- name: Create system user for Oasis Node
+  user:
+    name: "{{ node_user }}"
+    shell: /bin/bash
+    create_home: yes
+    home: "/home/{{ node_user }}"
+    groups: "{{ user_groups | default('systemd-journal') }}"
+    append: yes
+
+- name: Create directory structure
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ node_user }}"
+    group: "{{ node_user }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { path: '/home/{{ node_user }}/bin', mode: '0755' }
+    - { path: '/home/{{ node_user }}/data', mode: '0700' }
+    - { path: '/home/{{ node_user }}/etc', mode: '0755' }
+
+- name: Download and unarchive Oasis Core binary
+  unarchive:
+    src: "https://github.com/oasisprotocol/oasis-core/releases/download/v{{ target_version }}/oasis_core_{{ target_version }}_linux_amd64.tar.gz"
+    dest: "/home/{{ node_user }}/bin/"
+    remote_src: yes
+    owner: "{{ node_user }}"
+    group: "{{ node_user }}"
+    mode: '0755'
+    extra_opts:
+      - --strip-components=1
+      - --wildcards
+      - --no-anchored
+      - 'oasis-*'
+    creates: "/home/{{ node_user }}/bin/oasis-node"
+  notify: restart oasis-node
+
+- name: Check if genesis file exists
+  stat:
+    path: "/home/{{ node_user }}/etc/genesis.json"
+  register: genesis_file
+
+- name: Download genesis file
+  get_url:
+    url: "{{ genesis_url }}"
+    dest: "/home/{{ node_user }}/etc/genesis.json"
+    checksum: "{{ genesis_checksum }}"
+    owner: "{{ node_user }}"
+    group: "{{ node_user }}"
+    mode: '0644'
+  when: not genesis_file.stat.exists
+
+- name: Get latest block height
+  uri:
+    url: "https://api.oasisscan.com/v2/{{ network }}/chain/blocks?page=1&size=1"
+    return_content: yes
+  register: latest_block_info
+
+- name: Calculate trust height (~10 days ago)
+  set_fact:
+    trust_height_target: "{{ latest_block_info.json.data.list[0].height - 144000 }}"
+  when: latest_block_info.status == 200
+
+- name: Get block at trust height
+  uri:
+    url: "https://api.oasisscan.com/v2/{{ network }}/chain/block/{{ trust_height_target }}"
+    return_content: yes
+  register: trust_block_info
+  when: trust_height_target is defined
+
+- name: Set checkpoint sync facts
+  set_fact:
+    checkpoint_sync_height: "{{ trust_block_info.json.data.height }}"
+    checkpoint_sync_hash: "{{ trust_block_info.json.data.hash }}"
+  when: trust_block_info.status == 200
+
+- name: Generate config.yml from template
+  template:
+    src: config.yml.j2
+    dest: "/home/{{ node_user }}/etc/config.yml"
+    owner: "{{ node_user }}"
+    group: "{{ node_user }}"
+    mode: '0644'
+  notify: restart oasis-node
+
+- name: Ensure correct ownership of home directory
+  file:
+    path: "/home/{{ node_user }}"
+    state: directory
+    owner: "{{ node_user }}"
+    group: "{{ node_user }}"
+    recurse: yes
+
+- name: Set permissions for all PEM files
+  ansible.builtin.command: >
+    find /home/{{ node_user }}/data -maxdepth 1 -type f -name '*.pem' -exec chmod 600 {} +
+  changed_when: false
+    
+- name: Deploy and start systemd unit
+  template:
+    src: oasis-node.service.j2
+    dest: "/etc/systemd/system/oasis-{{ network }}-{{ node_type }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart oasis-node
+
+- name: Deploy command aliases
+  template:
+    src: profile.j2
+    dest: "/home/{{ node_user }}/.profile"
+    owner: "{{ node_user }}"
+    group: "{{ node_user }}"
+    mode: '0644'
+
+- name: Enable and start service
+  systemd:
+    name: "oasis-{{ network }}-{{ node_type }}"
+    state: started
+    enabled: yes
+
+- name: Deploy sudoers file for user
+  template:
+    src: sudoer.j2
+    dest: "/etc/sudoers.d/oasis-node-{{ node_user }}"
+    owner: root
+    group: root
+    mode: '0440'

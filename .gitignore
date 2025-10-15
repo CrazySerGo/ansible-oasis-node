@@ -1,0 +1,5 @@
+# Ignore local inventory file
+inventory/hosts.yml
+
+# Ignore Ansible temporary files
+*.retry

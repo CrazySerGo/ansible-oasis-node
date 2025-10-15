@@ -1,0 +1,14 @@
+---
+# Mainnet Emerald Node specific variables
+network: mainnet
+node_type: emerald
+node_user: emerald
+node_mode: compute
+runtimes:
+  - id: "000000000000000000000000000000000000000000000000e2eaa99fc008f87f"
+    name: "Emerald"
+port_offset: 2
+p2p_port: "{{ base_p2p_port + port_offset }}"
+consensus_port: "{{ base_consensus_port + port_offset }}"
+metrics_port: "{{ base_metrics_port + port_offset }}"
+consensus_validator: false

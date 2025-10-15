@@ -1,0 +1,36 @@
+# -----------------------------------------------------------------------------
+#  Aliases for managing the Oasis Node service
+#  This file is managed by Ansible.
+# -----------------------------------------------------------------------------
+
+# Add ~/bin to the PATH
+export PATH="$HOME/bin:$PATH"
+
+# Service name for this node instance
+export OASIS_SERVICE="oasis-{{ network }}-{{ node_type }}.service"
+
+# Service management aliases
+alias start-node="sudo systemctl start $OASIS_SERVICE"
+alias stop-node="sudo systemctl stop $OASIS_SERVICE"
+alias restart-node="sudo systemctl restart $OASIS_SERVICE"
+alias status-service="sudo systemctl status $OASIS_SERVICE"
+alias logs="journalctl -fu $OASIS_SERVICE -o cat"
+
+# Node status aliases
+alias status-full="oasis-node control status --address unix:/home/{{ node_user }}/data/internal.sock"
+alias status-short='status-full | jq -r "\"version: \(.software_version) | mode: \(.mode) | consensus: \(.consensus.status) | last_reg: \(.registration.last_registration)\""'
+
+# Help alias
+alias hint="echo 'Available Oasis Node aliases:'; echo; \
+    echo '  start-node      - Start the Oasis Node service'; \
+    echo '  stop-node       - Stop the Oasis Node service'; \
+    echo '  restart-node    - Restart the Oasis Node service'; \
+    echo '  logs            - View the live journald logs for the node'; \
+    echo '  status-service  - Check the status of the systemd service'; \
+    echo '  status-full     - Get the full JSON status output from the running node'; \
+    echo '  status-short    - Get a brief summary of height, hash, and peer count'; \
+    echo '  hint            - Display this help message';"
+
+# Display help on login
+
+hint

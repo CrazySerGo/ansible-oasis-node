@@ -1,0 +1,17 @@
+---
+# Generic defaults for the oasis_node role
+
+# Pruning configuration (approx. 30 days)
+prune_consensus_num_kept: 432000
+prune_runtime_num_kept: 432000
+
+# Checkpoint sync is enabled by default.
+checkpoint_sync_enabled: true
+trusted_period: "288h" # 12 days, as recommended
+
+# This allows a user to force a binary update.
+force_update_binary: false
+
+# By default, the external IP is the same as the ansible host.
+# This can be overridden in the inventory for NAT scenarios.
+external_ip: "{{ ansible_host }}"

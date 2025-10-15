@@ -1,0 +1,21 @@
+---
+- name: Check systemd service status
+  command: "systemctl is-active oasis-{{ network }}-{{ node_type }}"
+  register: service_status
+  changed_when: false
+  failed_when: false
+
+- name: Display service status
+  debug:
+    msg: "Service oasis-{{ network }}-{{ node_type }} status: {{ 'active' if service_status.rc == 0 else 'inactive' }}"
+
+- name: Get node status
+  command: "/home/{{ node_user }}/bin/oasis-node control status --address unix:/home/{{ node_user }}/data/internal.sock"
+  register: node_status_raw
+  changed_when: false
+  when: service_status.rc == 0
+
+- name: Parse and display node status
+  debug:
+    var: node_status_raw.stdout | from_json
+  when: node_status_raw.stdout is defined

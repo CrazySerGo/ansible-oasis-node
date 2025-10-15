@@ -1,0 +1,14 @@
+---
+# Testnet Emerald Node specific variables
+network: testnet
+node_type: emerald
+node_user: temerald
+node_mode: compute
+runtimes:
+  - id: "00000000000000000000000000000000000000000000000072c8215e60d5bca7"
+    name: "Emerald"
+port_offset: 12
+p2p_port: "{{ base_p2p_port + port_offset }}"
+consensus_port: "{{ base_consensus_port + port_offset }}"
+metrics_port: "{{ base_metrics_port + port_offset }}"
+consensus_validator: false

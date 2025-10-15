@@ -1,0 +1,5 @@
+# This file is managed by Ansible.
+# It allows the {{ node_user }} user to manage the oasis-{{ network }}-{{ node_type }}.service service.
+Defaults:{{ node_user }} !requiretty
+{% set service_name = "oasis-" + network + "-" + node_type + ".service" %}
+{{ node_user }} ALL=(ALL) NOPASSWD: /usr/bin/systemctl start {{ service_name }}, /usr/bin/systemctl stop {{ service_name }}, /usr/bin/systemctl restart {{ service_name }}, /usr/bin/systemctl status {{ service_name }}
