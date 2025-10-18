@@ -7,7 +7,7 @@
 
 - name: Parse current binary version
   set_fact:
-    current_version: "{{ current_version_raw.stdout | regex_search('[0-9]+\\.[0-9]+\\.[0-9]+') }}"
+    current_version: "{{ current_version_raw.stdout | regex_search('([0-9]+\\.[0-9]+\\.[0-9]+)', '\\1') | first | default('') }}"
   when: current_version_raw.stdout is defined
 
 - name: Set target_version if override is provided
@@ -19,13 +19,14 @@
   uri:
     url: "https://raw.githubusercontent.com/oasisprotocol/docs/refs/heads/main/docs/node/network/{{ network }}.md"
     return_content: yes
+    status_code: 200
   register: network_doc
   when: target_version_override is not defined
 
 - name: Parse recommended version
   set_fact:
     target_version: "{{ (network_doc.content | regex_search('Oasis Core.*version:\\s*\\* \\[([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)\\]', '\\1') | default([''], true) | first) }}"
-  when: target_version_override is not defined and network_doc.status == 200
+  when: target_version_override is not defined
 
 - name: Fail if target_version could not be determined
   fail:

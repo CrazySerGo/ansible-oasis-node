@@ -4,6 +4,7 @@ network: mainnet
 node_type: mixed
 node_user: oasis
 node_mode: compute
+emerald_runtime_version: "v11.0.0"
 consensus_validator: false
 # The `runtimes` list for a mixed node is defined per-host in inventory/hosts.yml
 port_offset: 4 # Using a new offset to avoid conflicts

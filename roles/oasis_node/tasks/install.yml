@@ -26,6 +26,11 @@
     groups: "{{ user_groups | default('systemd-journal') }}"
     append: yes
 
+- name: Install jq
+  package:
+    name: jq
+    state: present
+
 - name: Create directory structure
   file:
     path: "{{ item.path }}"
@@ -37,6 +42,7 @@
     - { path: '/home/{{ node_user }}/bin', mode: '0755' }
     - { path: '/home/{{ node_user }}/data', mode: '0700' }
     - { path: '/home/{{ node_user }}/etc', mode: '0755' }
+    - { path: '/home/{{ node_user }}/runtimes', mode: '0755' }
 
 - name: Download and unarchive Oasis Core binary
   unarchive:
@@ -69,21 +75,39 @@
     mode: '0644'
   when: not genesis_file.stat.exists
 
+- name: Check if Emerald runtime file exists
+  stat:
+    path: "/home/{{ node_user }}/runtimes/emerald-paratime.orc"
+  register: emerald_runtime_file
+  when: emerald_runtime_version is defined
+
+- name: Download Emerald runtime file
+  get_url:
+    url: "https://github.com/oasisprotocol/emerald-paratime/releases/download/{{ emerald_runtime_version }}{{ '-testnet' if network == 'testnet' else '' }}/emerald-paratime.orc"
+    dest: "/home/{{ node_user }}/runtimes/emerald-paratime.orc"
+    owner: "{{ node_user }}"
+    group: "{{ node_user }}"
+    mode: '0755'
+  when:
+    - emerald_runtime_version is defined
+    - not emerald_runtime_file.stat.exists
+
 - name: Get latest block height
   uri:
     url: "https://api.oasisscan.com/v2/{{ network }}/chain/blocks?page=1&size=1"
     return_content: yes
+    status_code: 200
   register: latest_block_info
 
 - name: Calculate trust height (~10 days ago)
   set_fact:
     trust_height_target: "{{ latest_block_info.json.data.list[0].height - 144000 }}"
-  when: latest_block_info.status == 200
 
 - name: Get block at trust height
   uri:
     url: "https://api.oasisscan.com/v2/{{ network }}/chain/block/{{ trust_height_target }}"
     return_content: yes
+    status_code: 200
   register: trust_block_info
   when: trust_height_target is defined
 
@@ -91,7 +115,6 @@
   set_fact:
     checkpoint_sync_height: "{{ trust_block_info.json.data.height }}"
     checkpoint_sync_hash: "{{ trust_block_info.json.data.hash }}"
-  when: trust_block_info.status == 200
 
 - name: Generate config.yml from template
   template:
@@ -110,10 +133,18 @@
     group: "{{ node_user }}"
     recurse: yes
 
+- name: Find all PEM files in the data directory
+  ansible.builtin.find:
+    paths: "/home/{{ node_user }}/data"
+    patterns: "*.pem"
+    recurse: no
+  register: pem_files
+
 - name: Set permissions for all PEM files
-  ansible.builtin.command: >
-    find /home/{{ node_user }}/data -maxdepth 1 -type f -name '*.pem' -exec chmod 600 {} +
-  changed_when: false
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: '0600'
+  loop: "{{ pem_files.files }}"
     
 - name: Deploy and start systemd unit
   template:
