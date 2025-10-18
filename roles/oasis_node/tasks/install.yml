@@ -37,6 +37,7 @@
     - { path: '/home/{{ node_user }}/bin', mode: '0755' }
     - { path: '/home/{{ node_user }}/data', mode: '0700' }
     - { path: '/home/{{ node_user }}/etc', mode: '0755' }
+    - { path: '/home/{{ node_user }}/runtimes', mode: '0755' }
 
 - name: Download and unarchive Oasis Core binary
   unarchive:
@@ -68,6 +69,23 @@
     group: "{{ node_user }}"
     mode: '0644'
   when: not genesis_file.stat.exists
+
+- name: Check if Emerald runtime file exists
+  stat:
+    path: "/home/{{ node_user }}/runtimes/emerald-paratime.orc"
+  register: emerald_runtime_file
+  when: emerald_runtime_version is defined
+
+- name: Download Emerald runtime file
+  get_url:
+    url: "https://github.com/oasisprotocol/emerald-paratime/releases/download/{{ emerald_runtime_version }}{{ '-testnet' if network == 'testnet' else '' }}/emerald-paratime.orc"
+    dest: "/home/{{ node_user }}/runtimes/emerald-paratime.orc"
+    owner: "{{ node_user }}"
+    group: "{{ node_user }}"
+    mode: '0755'
+  when:
+    - emerald_runtime_version is defined
+    - not emerald_runtime_file.stat.exists
 
 - name: Get latest block height
   uri:

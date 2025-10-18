@@ -50,6 +50,10 @@ consensus:
 runtime:
   environment: sgx
   sgx_loader: /home/{{ node_user }}/bin/oasis-core-runtime-loader
+  paths:
+{% if emerald_runtime_version is defined %}
+    - /home/{{ node_user }}/runtimes/emerald-paratime.orc
+{% endif %}
   runtimes:
 {% for runtime in runtimes %}
     - id: "{{ runtime.id }}"    # {{ runtime.name }}
