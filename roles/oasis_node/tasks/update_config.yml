@@ -8,7 +8,7 @@
 
 - name: Parse recommended version
   set_fact:
-    new_target_version: "{{ network_doc.content | regex_search('Oasis Core.*?version:.*?([0-9]+\\.[0-9]+\\.[0-9]+)', '\\1') | default(['']) | first }}"
+    new_target_version: "{{ (network_doc.content | regex_search('Oasis Core.*version:\\s*\\* \\[([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)\\]', '\\1') | default([''], true) | first) }}"
 
 - name: Parse seed peers
   set_fact:
