@@ -38,16 +38,42 @@
     new_checkpoint_sync_height: "{{ trust_block_info.json.data.height }}"
     new_checkpoint_sync_hash: "{{ trust_block_info.json.data.hash }}"
 
-- name: Re-render config.yml from template
-  template:
-    src: config.yml.j2
-    dest: "/home/{{ node_user }}/etc/config.yml"
-    owner: "{{ node_user }}"
-    group: "{{ node_user }}"
-    mode: '0644'
-  notify: restart oasis-node
-  when: >
-    (new_target_version is defined and new_target_version != target_version) or
-    (new_seed_peers is defined and new_seed_peers | difference(seed_peers | sort) | length > 0) or
-    (new_checkpoint_sync_height is defined and new_checkpoint_sync_height != checkpoint_sync_height) or
-    (new_checkpoint_sync_hash is defined and new_checkpoint_sync_hash != checkpoint_sync_hash)
+- name: Check if config has changed
+  set_fact:
+    config_changed: >-
+      {{ (new_target_version is defined and new_target_version != target_version) or
+         (new_seed_peers is defined and new_seed_peers | difference(seed_peers | sort) | length > 0) or
+         (new_checkpoint_sync_height is defined and new_checkpoint_sync_height != checkpoint_sync_height) or
+         (new_checkpoint_sync_hash is defined and new_checkpoint_sync_hash != checkpoint_sync_hash) }}
+
+- name: Update variables and re-render config if changed
+  block:
+    - name: Update target_version variable
+      set_fact:
+        target_version: "{{ new_target_version }}"
+      when: new_target_version is defined
+
+    - name: Update seed_peers variable
+      set_fact:
+        seed_peers: "{{ new_seed_peers }}"
+      when: new_seed_peers is defined
+
+    - name: Update checkpoint_sync_height variable
+      set_fact:
+        checkpoint_sync_height: "{{ new_checkpoint_sync_height }}"
+      when: new_checkpoint_sync_height is defined
+
+    - name: Update checkpoint_sync_hash variable
+      set_fact:
+        checkpoint_sync_hash: "{{ new_checkpoint_sync_hash }}"
+      when: new_checkpoint_sync_hash is defined
+
+    - name: Re-render config.yml from template
+      template:
+        src: config.yml.j2
+        dest: "/home/{{ node_user }}/etc/config.yml"
+        owner: "{{ node_user }}"
+        group: "{{ node_user }}"
+        mode: '0644'
+      notify: restart oasis-node
+  when: config_changed | default(false)
