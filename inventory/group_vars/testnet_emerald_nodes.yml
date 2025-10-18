@@ -4,6 +4,7 @@ network: testnet
 node_type: emerald
 node_user: temerald
 node_mode: compute
+emerald_runtime_version: "v11.0.0"
 runtimes:
   - id: "00000000000000000000000000000000000000000000000072c8215e60d5bca7"
     name: "Emerald"

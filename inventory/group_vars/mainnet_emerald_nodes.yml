@@ -4,6 +4,7 @@ network: mainnet
 node_type: emerald
 node_user: emerald
 node_mode: compute
+emerald_runtime_version: "v11.0.0"
 runtimes:
   - id: "000000000000000000000000000000000000000000000000e2eaa99fc008f87f"
     name: "Emerald"
