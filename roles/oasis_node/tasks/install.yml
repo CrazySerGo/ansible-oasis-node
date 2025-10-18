@@ -133,18 +133,11 @@
     group: "{{ node_user }}"
     recurse: yes
 
-- name: Find all PEM files in the data directory
-  ansible.builtin.find:
-    paths: "/home/{{ node_user }}/data"
-    patterns: "*.pem"
-    recurse: no
-  register: pem_files
-
 - name: Set permissions for all PEM files
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    mode: '0600'
-  loop: "{{ pem_files.files }}"
+  ansible.builtin.command: >
+    find /home/{{ node_user }}/data -maxdepth 1 -type f -name '*.pem' -exec chmod -c 600 {} +
+  register: chmod_result
+  changed_when: "chmod_result.stdout != ''"
     
 - name: Deploy and start systemd unit
   template:
