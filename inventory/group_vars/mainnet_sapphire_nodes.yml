@@ -1,0 +1,14 @@
+---
+# Mainnet Sapphire Node specific variables
+network: mainnet
+node_type: sapphire
+node_user: sapphire
+node_mode: compute
+runtimes:
+  - id: "000000000000000000000000000000000000000000000000f80306c9858e7279"
+    name: "Sapphire"
+port_offset: 3
+p2p_port: "{{ base_p2p_port + port_offset }}"
+consensus_port: "{{ base_consensus_port + port_offset }}"
+metrics_port: "{{ base_metrics_port + port_offset }}"
+consensus_validator: false

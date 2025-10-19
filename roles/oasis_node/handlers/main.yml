@@ -1,0 +1,6 @@
+---
+- name: restart oasis-node
+  systemd:
+    name: "oasis-{{ network }}-{{ node_type }}"
+    state: restarted
+    daemon_reload: yes

@@ -1,0 +1,14 @@
+---
+# Testnet common variables
+base_p2p_port: 9300
+base_consensus_port: 36656
+base_metrics_port: 9350
+target_version: "25.6"
+genesis_url: "https://github.com/oasisprotocol/testnet-artifacts/releases/download/2023-10-12/genesis.json"
+genesis_checksum: "sha256:02ce385c050b2a5c7cf0e5e34f5e4930f7804bb21efba2d1d3aa8215123aab68"
+
+seed_peers:
+  - "HcDFrTp/MqRHtju5bCx6TIhIMd6X/0ZQ3lUG73q5898=@35.247.24.212:26656"
+  - "HcDFrTp/MqRHtju5bCx6TIhIMd6X/0ZQ3lUG73q5898=@35.247.24.212:9200"
+  - "kqsc8ETIgG9LCmW5HhSEUW80WIpwKhS7hRQd8FrnkJ0=@34.140.116.202:26656"
+  - "kqsc8ETIgG9LCmW5HhSEUW80WIpwKhS7hRQd8FrnkJ0=@34.140.116.202:9200"

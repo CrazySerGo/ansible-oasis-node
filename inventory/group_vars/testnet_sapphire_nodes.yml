@@ -1,0 +1,14 @@
+---
+# Testnet Sapphire Node specific variables
+network: testnet
+node_type: sapphire
+node_user: tsapphire
+node_mode: compute
+runtimes:
+  - id: "000000000000000000000000000000000000000000000000a6d1e3ebf60dff6c"
+    name: "Sapphire"
+port_offset: 13
+p2p_port: "{{ base_p2p_port + port_offset }}"
+consensus_port: "{{ base_consensus_port + port_offset }}"
+metrics_port: "{{ base_metrics_port + port_offset }}"
+consensus_validator: false

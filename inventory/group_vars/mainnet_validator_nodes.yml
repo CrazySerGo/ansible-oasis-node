@@ -1,0 +1,12 @@
+---
+# Mainnet validator specific variables
+network: mainnet
+node_type: validator
+node_user: validator
+node_mode: client
+consensus_validator: true
+runtimes: []
+port_offset: 0
+p2p_port: "{{ base_p2p_port + port_offset }}"
+consensus_port: "{{ base_consensus_port + port_offset }}"
+metrics_port: "{{ base_metrics_port + port_offset }}"

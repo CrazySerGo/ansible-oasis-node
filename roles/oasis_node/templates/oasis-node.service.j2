@@ -1,0 +1,15 @@
+[Unit]
+Description=Oasis Service ({{ network }}-{{ node_type }})
+After=network.target
+
+[Service]
+User={{ node_user }}
+Group={{ node_user }}
+ExecStart=/home/{{ node_user }}/bin/oasis-node --config /home/{{ node_user }}/etc/config.yml
+WorkingDirectory=/home/{{ node_user }}/data
+Restart=always
+RestartSec=3
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

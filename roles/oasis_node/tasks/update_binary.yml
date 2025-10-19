@@ -1,0 +1,52 @@
+---
+- name: Check current binary version
+  command: "/home/{{ node_user }}/bin/oasis-node --version"
+  register: current_version_raw
+  changed_when: false
+  failed_when: false
+
+- name: Parse current binary version
+  set_fact:
+    current_version: "{{ current_version_raw.stdout | regex_search('([0-9]+\\.[0-9]+\\.[0-9]+)', '\\1') | first | default('') }}"
+  when: current_version_raw.stdout is defined
+
+- name: Set target_version if override is provided
+  set_fact:
+    target_version: "{{ target_version_override }}"
+  when: target_version_override is defined
+
+- name: Get recommended version from documentation
+  uri:
+    url: "https://raw.githubusercontent.com/oasisprotocol/docs/refs/heads/main/docs/node/network/{{ network }}.md"
+    return_content: yes
+    status_code: 200
+  register: network_doc
+  when: target_version_override is not defined
+
+- name: Parse recommended version
+  set_fact:
+    target_version: "{{ (network_doc.content | regex_search('\\*\\s+\\[([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)\\]', '\\1') | default([''], true) | first) }}"
+  when: target_version_override is not defined
+
+- name: Fail if target_version could not be determined
+  fail:
+    msg: "Could not determine target_version automatically. Please specify it manually using `-e target_version_override=X.Y.Z`."
+  when: target_version is not defined or target_version == ""
+
+- name: Update binary if version differs or force_update_binary is true
+  block:
+    - name: Download and unarchive Oasis Core binaries only
+      unarchive:
+        src: "https://github.com/oasisprotocol/oasis-core/releases/download/v{{ target_version }}/oasis_core_{{ target_version }}_linux_amd64.tar.gz"
+        dest: "/home/{{ node_user }}/bin/"
+        remote_src: yes
+        owner: "{{ node_user }}"
+        group: "{{ node_user }}"
+        mode: '0755'
+        extra_opts:
+          - --strip-components=1
+          - --wildcards
+          - --no-anchored
+          - 'oasis-*'
+      notify: restart oasis-node
+  when: (current_version is not defined) or (current_version != target_version) or (force_update_binary | default(false))

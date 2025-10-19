@@ -1,0 +1,74 @@
+# ================================================================
+#  Oasis Node Configuration (Ansible Template)
+# ================================================================
+
+mode: {{ node_mode }}   # validator | compute | client | seed | archive
+
+common:
+  data_dir: /home/{{ node_user }}/data
+  internal_socket_path: /home/{{ node_user }}/data/internal.sock
+  log:
+    format: JSON
+    level:
+      default: info
+      cometbft: warn
+      cometbft/context: error
+
+genesis:
+  file: /home/{{ node_user }}/etc/genesis.json
+
+registration:
+  entity_id: {{ entity_id }}
+
+p2p:
+  port: {{ p2p_port }}
+  registration:
+    addresses:
+      - {{ external_ip }}:{{ p2p_port }}
+  seeds:
+{% for seed in seed_peers %}
+    - {{ seed }}
+{% endfor %}
+
+consensus:
+  validator: {{ consensus_validator | bool }}
+  listen_address: tcp://0.0.0.0:{{ consensus_port }}
+  external_address: tcp://{{ external_ip }}:{{ consensus_port }}
+  checkpointer:
+    disabled: false
+  prune:
+    strategy: keep_n
+    num_kept: {{ prune_consensus_num_kept }}
+  state_sync:
+    enabled: {{ checkpoint_sync_enabled | bool }}
+  light_client:
+    trust:
+      period: "{{ trusted_period }}"
+      height: {{ checkpoint_sync_height }}
+      hash: {{ checkpoint_sync_hash }}
+
+runtime:
+  environment: sgx
+  sgx_loader: /home/{{ node_user }}/bin/oasis-core-runtime-loader
+  paths:
+{% if emerald_runtime_version is defined %}
+    - /home/{{ node_user }}/runtimes/emerald-paratime.orc
+{% endif %}
+  runtimes:
+{% for runtime in runtimes %}
+    - id: "{{ runtime.id }}"    # {{ runtime.name }}
+{% endfor %}
+  prune:
+    strategy: keep_last
+    num_kept: {{ prune_runtime_num_kept }}
+
+storage:
+  backend: pathbadger
+  max_cache_size: 1gb
+  checkpointer:
+    enabled: true
+  public_rpc_enabled: false
+
+metrics:
+  mode: pull
+  address: 0.0.0.0:{{ metrics_port }}

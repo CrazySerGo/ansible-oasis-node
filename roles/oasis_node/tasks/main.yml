@@ -1,0 +1,20 @@
+---
+- name: Import install tasks
+  import_tasks: install.yml
+  tags:
+    - install
+
+- name: Import update_config tasks
+  import_tasks: update_config.yml
+  tags:
+    - update_config
+
+- name: Import update_binary tasks
+  import_tasks: update_binary.yml
+  tags:
+    - update_binary
+
+- name: Import status tasks
+  import_tasks: status.yml
+  tags:
+    - status

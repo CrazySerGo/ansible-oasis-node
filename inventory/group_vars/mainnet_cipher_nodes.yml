@@ -1,0 +1,14 @@
+---
+# Mainnet Cipher Node specific variables
+network: mainnet
+node_type: cipher
+node_user: cipher
+node_mode: compute
+runtimes:
+  - id: "000000000000000000000000000000000000000000000000e199119c992377cb"
+    name: "Cipher"
+port_offset: 1
+p2p_port: "{{ base_p2p_port + port_offset }}"
+consensus_port: "{{ base_consensus_port + port_offset }}"
+metrics_port: "{{ base_metrics_port + port_offset }}"
+consensus_validator: false

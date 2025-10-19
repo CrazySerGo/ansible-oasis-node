@@ -1,0 +1,64 @@
+all:
+  vars:
+    ansible_user: root
+    ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+    ansible_become: yes
+    ansible_become_method: sudo
+    ansible_python_interpreter: /usr/bin/python3
+
+  children:
+    mainnet:
+      children:
+        mainnet_validator_nodes:
+          hosts:
+            mainnet-validator:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
+        mainnet_mixed_nodes:
+          hosts:
+            mainnet-mix:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
+              runtimes:
+                - id: "000000000000000000000000000000000000000000000000e199119c992377cb"
+                  name: "Cipher"
+                - id: "000000000000000000000000000000000000000000000000f80306c9858e7279"
+                  name: "Sapphire"
+        mainnet_cipher_nodes:
+          hosts:
+            mainnet-cipher:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
+        mainnet_emerald_nodes:
+          hosts:
+            mainnet-emerald:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
+        mainnet_sapphire_nodes:
+          hosts:
+            mainnet-sapphire:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
+
+    testnet:
+      children:
+        testnet_validator_nodes:
+          hosts:
+            testnet-validator:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
+        testnet_cipher_nodes:
+          hosts:
+            testnet-cipher:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
+        testnet_emerald_nodes:
+          hosts:
+            testnet-emerald:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
+        testnet_sapphire_nodes:
+          hosts:
+            testnet-sapphire:
+              ansible_host: 1.2.3.4
+              entity_id: ENTITY_ID
