@@ -41,10 +41,10 @@
 - name: Check if config has changed
   set_fact:
     config_changed: >-
-      {{ (new_target_version is defined and new_target_version != target_version) or
-         (new_seed_peers is defined and new_seed_peers | difference(seed_peers | sort) | length > 0) or
-         (new_checkpoint_sync_height is defined and new_checkpoint_sync_height != checkpoint_sync_height) or
-         (new_checkpoint_sync_hash is defined and new_checkpoint_sync_hash != checkpoint_sync_hash) }}
+      {{ (new_target_version is defined and new_target_version != target_version | default('')) or
+         (new_seed_peers is defined and new_seed_peers | difference(seed_peers | default([])) | length > 0) or
+         (new_checkpoint_sync_height is defined and new_checkpoint_sync_height != checkpoint_sync_height | default('')) or
+         (new_checkpoint_sync_hash is defined and new_checkpoint_sync_hash != checkpoint_sync_hash | default('')) }}
 
 - name: Update variables and re-render config if changed
   block:
