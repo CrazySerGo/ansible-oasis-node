@@ -16,18 +16,18 @@
 
 - name: Get latest block height for checkpoint sync
   uri:
-    url: "https://api.oasisscan.com/v2/{{ network }}/chain/blocks?page=1&size=1"
+    url: "{{ 'https://nexus.oasis.io/v1' if network == 'mainnet' else 'https://testnet.nexus.oasis.io/v1' }}/consensus/blocks?limit=1"
     return_content: yes
     status_code: 200
   register: latest_block_info
 
 - name: Calculate trust height (~10 days ago)
   set_fact:
-    trust_height_target: "{{ latest_block_info.json.data.list[0].height - 144000 }}"
+    trust_height_target: "{{ latest_block_info.json.blocks[0].height - 144000 }}"
 
 - name: Get block at trust height
   uri:
-    url: "https://api.oasisscan.com/v2/{{ network }}/chain/block/{{ trust_height_target }}"
+    url: "{{ 'https://nexus.oasis.io/v1' if network == 'mainnet' else 'https://testnet.nexus.oasis.io/v1' }}/consensus/blocks/{{ trust_height_target }}"
     return_content: yes
     status_code: 200
   register: trust_block_info
@@ -35,8 +35,8 @@
 
 - name: Set new checkpoint sync facts
   set_fact:
-    new_checkpoint_sync_height: "{{ trust_block_info.json.data.height }}"
-    new_checkpoint_sync_hash: "{{ trust_block_info.json.data.hash }}"
+    new_checkpoint_sync_height: "{{ trust_block_info.json.height }}"
+    new_checkpoint_sync_hash: "{{ trust_block_info.json.hash }}"
 
 - name: Check if config has changed
   set_fact:
